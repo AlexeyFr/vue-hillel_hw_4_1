@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>vue-hillel_hw_4_1</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+  <style>
+    body {
+      font-size: 20px;
+      font-family: sans-serif;
+      color: #333;
+    }
+    .question {
+      font-weight: 600;
+    }
+    .answers {
+      margin-bottom: 20px;
+    }
+    .answers label {
+      display: block;
+    }
+    #submit {
+      font-family: sans-serif;
+      font-size: 20px;
+      background-color: #279;
+      color: #fff;
+      border: 0px;
+      border-radius: 3px;
+      padding: 20px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    #submit:hover {
+      background-color: #38a;
+    }
+    .incorrect .answers {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app">
+
+    <form @submit.prevent="submit">
+      <div id="quiz">
+        <quiz-item
+          v-for="(q, index) in questions"
+          :key="q.question"
+          :question="q.question"
+          :answers="q.answers"
+          :correct-answer="q.correctAnswer"
+          :index="index"
+          :class="submited && `${user_answers[index] ? 'correct' : 'incorrect'}`"
+          @select="select">
+        </quiz-item>
+      </div>
+      <button id="submit">Submit Quiz</button>
+    </form>
+
+    <div id="results" v-if="submited">
+      {{ correctAnswers }} out of {{ questions.length }}
+    </div>
+
+  </div>
+
+<script>
+
+  var Question = {
+    props: {
+      question: {
+        type: String,
+        required: true
+      },
+      answers: {
+        type: Object,
+        required: true
+      },
+      correctAnswer: {
+        type: String,
+        required: true
+      },
+      index: {
+        type: Number,
+        required: true
+      }
+    },
+    template: `
+      <div>
+        <div class="question">{{question}}</div>
+        <div class="answers">
+          <label v-for="(answer, letter) in answers" :key="letter">
+            <input type="radio" :name="'q' + index" :value="letter" @change="change(letter)">
+            {{letter}} : {{answer}}
+          </label>
+        </div>
+      </div>`,
+    methods: {
+      change (letter) {
+        this.$emit('select', letter === this.correctAnswer, this.index)
+      }
+    },
+  }
+
+  new Vue({
+    el: '#app',
+    components: {
+      'quiz-item': Question
+    },
+    data: {
+      questions: [],
+      submited: false,
+      correctAnswers: 0
+    },
+    created() {
+      this.questions = [
+                        {
+                          question: "Who is the strongest?",
+                          answers: {
+                            a: "Superman",
+                            b: "The Terminator",
+                            c: "Waluigi, obviously"
+                          },
+                          correctAnswer: "c"
+                        },
+                        {
+                          question: "What is the best site ever created?",
+                          answers: {
+                            a: "SitePoint",
+                            b: "Simple Steps Code",
+                            c: "Trick question; they're both the best"
+                          },
+                          correctAnswer: "c"
+                        },
+                        {
+                          question: "Where is Waldo really?",
+                          answers: {
+                            a: "Antarctica",
+                            b: "Exploring the Pacific Ocean",
+                            c: "Sitting in a tree",
+                            d: "Minding his own business, so stop asking"
+                          },
+                          correctAnswer: "d"
+                        }
+                      ]
+    },
+    computed: {
+      user_answers () {
+        return this.questions.map(a => false)
+      },
+    },
+    methods: {
+      submit () {
+        this.submited = true;
+      },
+      select (isCorrect, index) {
+        this.submited = false;
+        this.user_answers[index] = isCorrect;
+        this.correctAnswers = this.user_answers.reduce((prev, current) => prev + current, 0);
+      }
+    }
+  })
+
+</script>
+</body>
+</html>
